@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-full flex flex-col pt-12 pb-12 px-4 sm:px-6 lg:px-8 w-full max-w-5xl mx-auto">
+    
+    <!-- Page Header -->
+    <div class="mb-10">
+        <h2 class ="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Settings</h2>
+        <p class="text-slate-500 text-sm">Manage your preferences and application settings</p>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- 1. Profile Card -->
+        <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 p-6 sm:p-8 flex flex-col h-full">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">Profile</h3>
+                    <p class="text-xs text-slate-500">Manage your personal information</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6 mt-2">
+                <!-- Large Avatar -->
+                <div class="w-20 h-20 rounded-full bg-indigo-600 text-white flex items-center justify-center text-3xl font-bold uppercase shadow-md shadow-indigo-200 relative">
+                    {{ session.get('username', 'G')[0] }}
+                    <div class="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-pen text-[10px] text-slate-600"></i>
+                    </div>
+                </div>
+                
+                <!-- Username Field (Read-only for demo) -->
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Username</label>
+                    <input type="text" value="{{ session.get('username', 'Guest') }}" readonly
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none cursor-not-allowed">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Appearance Card -->
+        <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 p-6 sm:p-8 flex flex-col h-full">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <i class="fa-solid fa-palette"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">Appearance</h3>
+                    <p class="text-xs text-slate-500">Choose your app theme</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 mt-auto">
+                <button id="lightModeBtn" onclick="setTheme('light')" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-all">
+                    <i class="fa-solid fa-sun"></i> Light Mode <i class="fa-solid fa-circle-check text-sm ml-1" id="lightCheck"></i>
+                </button>
+                <button id="darkModeBtn" onclick="setTheme('dark')" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-semibold hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-moon"></i> Dark Mode <i class="fa-solid fa-circle-check text-sm ml-1 hidden" id="darkCheck"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Analysis Preferences Card -->
+        <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 p-6 sm:p-8 flex flex-col h-full">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">Analysis Settings</h3>
+                    <p class="text-xs text-slate-500">Customize analysis preferences</p>
+                </div>
+            </div>
+            
+            <div class="space-y-5 mt-auto">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold text-slate-900 text-sm">Auto Save History</h4>
+                        <p class="text-xs text-slate-500">Automatically save analysis results to database</p>
+                    </div>
+                    <!-- Custom Toggle -->
+                    <button type="button" onclick="toggleSwitch(this, 'Requires backend sync to disable.')" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out">
+                        <span class="translate-x-5 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between pt-5 border-t border-slate-100">
+                    <div>
+                        <h4 class="font-semibold text-slate-900 text-sm">Strict Categorization</h4>
+                        <p class="text-xs text-slate-500">Force neutral values if confidence is below 40%</p>
+                    </div>
+                    <!-- Custom Toggle -->
+                    <button type="button" onclick="toggleSwitch(this, 'Strict categorization enabled.')" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-200 transition-colors duration-200 ease-in-out">
+                        <span class="translate-x-0 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Model Architecture (New Showcase Card) -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl shadow-lg border border-indigo-900/50 p-6 sm:p-8 flex flex-col h-full text-white relative overflow-hidden">
+            <!-- Decorative background elements -->
+            <i class="fa-solid fa-microchip absolute -bottom-6 -right-6 text-9xl text-white/5 rotate-12"></i>
+            
+            <div class="flex items-center gap-3 mb-6 relative z-10">
+                <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 border border-indigo-500/30">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white">Model Architecture</h3>
+                    <p class="text-xs text-indigo-200">Local Machine Learning Specifications</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mt-auto relative z-10 text-sm">
+                <div>
+                    <span class="block text-xs text-indigo-300 font-medium mb-1">Algorithm</span>
+                    <span class="font-semibold">Logistic Regression</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-indigo-300 font-medium mb-1">Vectorization</span>
+                    <span class="font-semibold">TF-IDF (5k features)</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-indigo-300 font-medium mb-1">Training Data</span>
+                    <span class="font-semibold">27,480 Tweets</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-indigo-300 font-medium mb-1">Environment</span>
+                    <span class="font-semibold text-emerald-400 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 100% Offline
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-12 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-400">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-code-branch"></i> App Version v1.0.0
+        </div>
+        <div>
+            © 2026 Sentix AI Dashboard
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="#" class="hover:text-indigo-600 transition-colors">Documentation</a>
+            <a href="#" class="hover:text-indigo-600 transition-colors">Need Help?</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Notification Toast for Settings Actions -->
+<div id="settingsToast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-xl shadow-slate-200/50 font-medium text-sm transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
+    Preference saved.
+</div>
+<script>
+    function showToast(message) {
+        const toast = document.getElementById('settingsToast');
+        toast.textContent = message;
+        toast.classList.remove('opacity-0', 'translate-y-4');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-4');
+            toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 3000);
+    }
+
+    // Connects to the new backend route
+    function toggleSwitch(btn, settingName, toastMessage) {
+        const span = btn.querySelector('span');
+        const isOn = span.classList.contains('translate-x-5');
+        const newValue = !isOn; // Flip the value
+        
+        if (newValue) {
+            span.classList.replace('translate-x-0', 'translate-x-5');
+            btn.classList.replace('bg-slate-200', 'bg-indigo-600');
+        } else {
+            span.classList.replace('translate-x-5', 'translate-x-0');
+            btn.classList.replace('bg-indigo-600', 'bg-slate-200');
+        }
+        
+        // Send data quietly to backend
+        fetch('/update_setting', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ setting: settingName, value: newValue })
+        });
+        
+        showToast(toastMessage);
+    }
+
+    // Saves theme to local memory
+    function setTheme(mode) {
+        const lightBtn = document.getElementById('lightModeBtn');
+        const darkBtn = document.getElementById('darkModeBtn');
+        const lightCheck = document.getElementById('lightCheck');
+        const darkCheck = document.getElementById('darkCheck');
+
+        if (mode === 'dark') {
+            darkBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-all";
+            lightBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-semibold hover:bg-slate-50 transition-all";
+            darkCheck.classList.remove('hidden');
+            lightCheck.classList.add('hidden');
+            
+            document.documentElement.style.filter = 'invert(0.9) hue-rotate(180deg)';
+            localStorage.setItem('theme', 'dark'); // Save to memory
+            showToast("Dark mode activated globally.");
+        } else {
+            lightBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-all";
+            darkBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-semibold hover:bg-slate-50 transition-all";
+            lightCheck.classList.remove('hidden');
+            darkCheck.classList.add('hidden');
+            
+            document.documentElement.style.filter = 'none';
+            localStorage.setItem('theme', 'light'); // Save to memory
+            showToast("Light mode activated globally.");
+        }
+    }
+    // Sync UI with saved theme on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const lightBtn = document.getElementById('lightModeBtn');
+        const darkBtn = document.getElementById('darkModeBtn');
+        const lightCheck = document.getElementById('lightCheck');
+        const darkCheck = document.getElementById('darkCheck');
+
+        if (savedTheme === 'dark') {
+            darkBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-all";
+            lightBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-semibold hover:bg-slate-50 transition-all";
+            darkCheck.classList.remove('hidden');
+            lightCheck.classList.add('hidden');
+        } else {
+            lightBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-all";
+            darkBtn.className = "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-semibold hover:bg-slate-50 transition-all";
+            lightCheck.classList.remove('hidden');
+            darkCheck.classList.add('hidden');
+        }
+    });
+</script>
+
+{% endblock %}

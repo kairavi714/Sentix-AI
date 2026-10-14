@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-full flex flex-col items-center pt-12 pb-12 px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto">
+    
+    <!-- Page Header -->
+    <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold text-slate-900 mb-2 tracking-tight">History</h2>
+        <p class="text-slate-500 text-sm">View and manage your past sentiment analysis results</p>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="w-full bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 overflow-hidden">
+        
+        <!-- Toolbar (Search & Filter) -->
+        <div class="p-5 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-100">
+            <!-- Search -->
+            <div class="relative w-full sm:max-w-xs">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" id="searchInput" placeholder="Search..." 
+                    class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+            </div>
+
+            <!-- Filter Dropdown Container -->
+            <div class="relative w-full sm:w-auto">
+                <button id="filterBtn" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-filter text-indigo-600 text-xs"></i> Filter
+                </button>
+                
+                <!-- Filter Menu -->
+                <div id="filterMenu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-lg shadow-slate-200/50 z-50 p-2">
+                    <div class="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Sort by</div>
+                    <button onclick="applySort('newest')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">Newest First</button>
+                    <button onclick="applySort('oldest')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">Oldest First</button>
+                    
+                    <div class="border-t border-slate-100 my-1"></div>
+                    
+                    <div class="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Sentiment</div>
+                    <button onclick="applyFilter('All')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">All Results</button>
+                    <button onclick="applyFilter('Positive')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">Positive Only</button>
+                    <button onclick="applyFilter('Negative')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">Negative Only</button>
+                    <button onclick="applyFilter('Neutral')" class="w-full text-left px-3 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50">Neutral Only</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Data -->
+        <div class="overflow-x-auto min-h-[420px]">
+            <table class="w-full text-left border-collapse" id="historyTable">
+                <thead>
+                    <tr class="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-white">
+                        <th class="px-6 py-4 w-12 text-center">#</th>
+                        <th class="px-6 py-4">Text</th>
+                        <th class="px-6 py-4 w-32">Result</th>
+                        <th class="px-6 py-4 w-40 text-center">Date</th>
+                        <th class="px-6 py-4 w-20 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50 text-sm" id="tableBody">
+                    
+                    {% for log in logs | reverse %}
+                    <!-- We pass the UTC time as an ISO string so JS can convert it to local timezone -->
+                    <tr class="hover:bg-slate-50/50 transition-colors group history-row" 
+                        data-text="{{ log.input_text | lower }}" 
+                        data-sentiment="{{ log.sentiment }}" 
+                        data-utc="{{ log.created_at.isoformat() + 'Z' if log.created_at else '' }}"
+                        data-date="{{ log.created_at.timestamp() if log.created_at else 0 }}">
+                        
+                        <td class="px-6 py-5 text-center text-slate-400 font-medium row-index"></td>
+                        
+                        <td class="px-6 py-5 text-slate-700 font-medium max-w-md">
+                            "{{ log.input_text }}"
+                        </td>
+                        
+                        <td class="px-6 py-5">
+                            {% if log.sentiment == 'Positive' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                    Positive
+                                </span>
+                            {% elif log.sentiment == 'Negative' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-600 border border-rose-100">
+                                    Negative
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                    Neutral
+                                </span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="px-6 py-5 text-center">
+                            <div class="text-slate-700 date-display">...</div>
+                            <div class="text-xs text-slate-400 mt-0.5 time-display">...</div>
+                        </td>
+                        
+                        <td class="px-6 py-5 text-center relative">
+                            <button onclick="toggleActionMenu(this)" class="w-8 h-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors flex items-center justify-center">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            
+                            <div class="action-menu hidden absolute right-8 top-10 w-36 bg-white border border-slate-100 rounded-xl shadow-lg shadow-slate-200/50 z-50 p-1.5 text-left">
+                                <button onclick="copyToClipboard('{{ log.input_text|escape }}', this)" class="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 rounded-lg hover:bg-slate-50 flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy Text
+                                </button>
+                                <button onclick="simulateDelete(this)" class="w-full text-left px-3 py-2 text-xs font-medium text-rose-600 rounded-lg hover:bg-rose-50 flex items-center gap-2 mt-1">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Empty State (Managed by JS) -->
+                    <tr id="emptyStateRow" class="hidden">
+                        <td colspan="5" class="px-6 py-16 text-center">
+                            <h3 class="text-slate-900 font-semibold mb-1">No history found</h3>
+                            <p class="text-slate-500 text-sm">Analyze some text to see your history here.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dynamic Pagination Footer -->
+        <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white text-sm">
+            <span class="text-slate-500" id="resultCountText">Showing 0 results</span>
+            
+            <!-- Pagination Controls injected by JavaScript -->
+            <div class="flex items-center gap-1" id="paginationControls"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="actionToast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-xl shadow-slate-200/50 font-medium text-sm transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
+    Action completed.
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.getElementById('tableBody');
+    const emptyStateRow = document.getElementById('emptyStateRow');
+    
+    let rows = Array.from(document.querySelectorAll('.history-row'));
+    let currentSentimentFilter = 'All';
+    
+    // Pagination Variables
+    let currentPage = 1;
+    const rowsPerPage = 5;
+    let filteredRows = [];
+
+    // 1. TIMEZONE CONVERSION ON LOAD
+    rows.forEach(row => {
+        const utcString = row.getAttribute('data-utc');
+        if (utcString) {
+            const date = new Date(utcString);
+            // Converts to local browser timezone automatically (e.g., IST)
+            row.querySelector('.date-display').textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            row.querySelector('.time-display').textContent = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+    });
+
+    // 2. CORE LOGIC: FILTER & SORT
+    function updateTable() {
+        const query = searchInput.value.toLowerCase();
+        
+        filteredRows = rows.filter(row => {
+            if (row.classList.contains('deleted-row')) return false;
+            
+            const text = row.getAttribute('data-text');
+            const sentiment = row.getAttribute('data-sentiment');
+            
+            const matchesSearch = text.includes(query);
+            const matchesFilter = currentSentimentFilter === 'All' || sentiment === currentSentimentFilter;
+            
+            return matchesSearch && matchesFilter;
+        });
+
+        // Re-index visually based on filtered result (1, 2, 3...)
+        filteredRows.forEach((row, index) => {
+            row.querySelector('.row-index').textContent = index + 1;
+        });
+
+        // Trigger Pagination
+        renderPagination();
+    }
+
+    // 3. PAGINATION RENDERER
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = startIndex + rowsPerPage;
+
+        // Hide all rows first
+        rows.forEach(row => row.style.display = 'none');
+        emptyStateRow.classList.add('hidden');
+
+        // Show only the 5 rows for the current page
+        if (filteredRows.length > 0) {
+            for (let i = startIndex; i < endIndex && i < filteredRows.length; i++) {
+                filteredRows[i].style.display = '';
+            }
+            
+            const showingStart = startIndex + 1;
+            const showingEnd = Math.min(endIndex, filteredRows.length);
+            document.getElementById('resultCountText').textContent = `Showing ${showingStart} to ${showingEnd} of ${filteredRows.length} results`;
+        } else {
+            emptyStateRow.classList.remove('hidden');
+            document.getElementById('resultCountText').textContent = `Showing 0 results`;
+        }
+
+        buildPaginationUI(totalPages);
+    }
+
+    function buildPaginationUI(totalPages) {
+        const pagContainer = document.getElementById('paginationControls');
+        pagContainer.innerHTML = '';
+
+        if (filteredRows.length === 0) return;
+
+        // Prev Button (<)
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `w-8 h-8 flex items-center justify-center rounded border border-slate-200 ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed bg-slate-50/50' : 'text-slate-600 hover:bg-slate-50'}`;
+        prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left text-xs"></i>';
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderPagination(); } };
+        pagContainer.appendChild(prevBtn);
+
+        // Page Numbers (1, 2, 3...)
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `w-8 h-8 flex items-center justify-center rounded border ${i === currentPage ? 'bg-indigo-600 text-white border-indigo-600 font-medium shadow-sm' : 'border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'}`;
+            pageBtn.textContent = i;
+            pageBtn.onclick = () => { currentPage = i; renderPagination(); };
+            pagContainer.appendChild(pageBtn);
+        }
+
+        // Next Button (>)
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `w-8 h-8 flex items-center justify-center rounded border border-slate-200 ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed bg-slate-50/50' : 'text-slate-600 hover:bg-slate-50'}`;
+        nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right text-xs"></i>';
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderPagination(); } };
+        pagContainer.appendChild(nextBtn);
+    }
+
+    // --- EVENTS & UI ACTIONS ---
+    searchInput.addEventListener('input', () => {
+        currentPage = 1; // Reset to page 1 on search
+        updateTable();
+    });
+
+    document.getElementById('filterBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('filterMenu').classList.toggle('hidden');
+    });
+
+    function applyFilter(sentiment) {
+        currentSentimentFilter = sentiment;
+        currentPage = 1; // Reset to page 1 on filter
+        document.getElementById('filterMenu').classList.add('hidden');
+        updateTable();
+        showToast(`Filtered by: ${sentiment}`);
+    }
+
+    function applySort(order) {
+        document.getElementById('filterMenu').classList.add('hidden');
+        
+        // Sort the array in memory
+        rows.sort((a, b) => {
+            let dateA = parseFloat(a.getAttribute('data-date'));
+            let dateB = parseFloat(b.getAttribute('data-date'));
+            return order === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+        
+        // Physically append to DOM so JS traversal reads correct order
+        rows.forEach(row => tableBody.appendChild(row));
+        
+        currentPage = 1;
+        updateTable();
+        showToast(`Sorted by: ${order === 'newest' ? 'Newest First' : 'Oldest First'}`);
+    }
+
+    function toggleActionMenu(btn) {
+        document.querySelectorAll('.action-menu').forEach(menu => menu.classList.add('hidden'));
+        btn.nextElementSibling.classList.toggle('hidden');
+        event.stopPropagation();
+    }
+
+    document.addEventListener('click', () => {
+        document.getElementById('filterMenu').classList.add('hidden');
+        document.querySelectorAll('.action-menu').forEach(menu => menu.classList.add('hidden'));
+    });
+
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            btn.parentElement.classList.add('hidden');
+            showToast("Text copied to clipboard!");
+        });
+    }
+
+    function simulateDelete(btn) {
+        const row = btn.closest('tr');
+        btn.parentElement.classList.add('hidden'); 
+        
+        row.style.transition = "all 0.3s ease";
+        row.style.opacity = "0";
+        row.style.transform = "translateX(-20px)";
+        
+        setTimeout(() => {
+            row.classList.add('deleted-row'); 
+            updateTable(); 
+            showToast("Record deleted successfully.");
+        }, 300);
+    }
+
+    // Initialize Table on Load
+    updateTable();
+</script>
+{% endblock %}

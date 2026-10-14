@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Changed to flexible padding (py-12) so it never touches the top navigation bar -->
+<div class="flex items-center justify-center py-12 sm:py-16">
+    <div class="bg-white p-8 sm:p-10 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 w-full max-w-md">
+        
+        <div class="text-center mb-8">
+            <!-- Updated to match the official Dashboard / Navbar Brain Logo -->
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-indigo-600 text-white mb-5 shadow-lg shadow-indigo-200">
+                <i class="fa-solid fa-chart-line text-3xl"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome Back</h2>
+            <p class="text-slate-500 mt-2 font-medium">Please sign in to continue.</p>
+        </div>
+
+        <!-- The core login form mapped to app.py -->
+        <form id="login-form" method="POST" action="{{ url_for('login') }}" class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
+                <input type="text" id="username-input" name="username" required 
+                       oninvalid="this.setCustomValidity('Please enter a username to continue.')" 
+                       oninput="this.setCustomValidity('')"
+                       class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" 
+                       placeholder="Enter your username">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                <input type="password" id="password-input" name="password" required 
+                       oninvalid="this.setCustomValidity('A password is required to securely log in.')" 
+                       oninput="this.setCustomValidity('')"
+                       class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" 
+                       placeholder="••••••••">
+            </div>
+            
+            <!-- Main Sign In Button -->
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-200 mt-2">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Quick Demo Access Divider -->
+        <div class="relative mt-8 mb-6">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-3 bg-white text-slate-400 font-semibold">Evaluator Access</span>
+            </div>
+        </div>
+
+        <!-- Working Demo Login Button -->
+        <div>
+            <button type="button" onclick="loginAsDemo()" class="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-emerald-200 bg-emerald-50 rounded-xl text-emerald-700 font-bold hover:bg-emerald-100 hover:border-emerald-300 transition-all">
+                <i class="fa-solid fa-user-graduate"></i> One-Click Demo Login
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Frontend logic for the demo button -->
+<script>
+    function loginAsDemo() {
+        // Automatically fill the fields
+        document.getElementById('username-input').value = "Demo-Login";
+        document.getElementById('password-input').value = "grading123";
+        
+        // Submit the form to your existing app.py backend
+        document.getElementById('login-form').submit();
+    }
+</script>
+{% endblock %}
